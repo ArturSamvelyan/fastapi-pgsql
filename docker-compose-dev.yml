@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/dev/Dockerfile
+    container_name: api_web_dev
+    command: uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    volumes:
+      - ./web/:/usr/src/app/
+    env_file:
+      - dev.env
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis
+      - postgres_db
+
+  adminer:
+    image: adminer:4.8.1-standalone
+    container_name: api_adminer
+    env_file:
+      - dev.env
+    ports:
+      - 8032:8032
+
+  postgres_db:
+    image: postgres:13-alpine
+    container_name: api_pgsql_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./misc/createdb.sql:/misc/createdb.sql
+    env_file:
+      - dev.env
+    ports:
+      - 5432:5432
+
+
+volumes:
+  postgres_data:
